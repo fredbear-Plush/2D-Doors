@@ -1,0 +1,51 @@
+{
+  "rules": {
+    "lobby": {
+      ".read": "auth != null",
+      "$sid": {
+        ".write": "auth != null && (!data.exists() || data.child('h').val() == auth.uid)"
+      }
+    },
+    "secrets": {
+      "$sid": {
+        ".read": false,
+        ".write": "auth != null && ((!data.exists() && !root.child('lobby/' + $sid).exists()) || root.child('lobby/' + $sid + '/h').val() == auth.uid)"
+      }
+    },
+    "rooms": {
+      "$sid": {
+        ".read": "auth != null && root.child('rooms/' + $sid + '/keys/' + auth.uid).exists()",
+        ".write": "auth != null && root.child('lobby/' + $sid + '/h').val() == auth.uid",
+        "keys": {
+          "$uid": {
+            ".write": "auth != null && auth.uid == $uid",
+            ".validate": "newData.val() == root.child('secrets/' + $sid).val()"
+          }
+        },
+        "players": {
+          "$uid": {
+            ".write": "auth != null && auth.uid == $uid && root.child('rooms/' + $sid + '/keys/' + auth.uid).exists()"
+          }
+        },
+        "in": {
+          "$uid": {
+            ".write": "auth != null && auth.uid == $uid && root.child('rooms/' + $sid + '/keys/' + auth.uid).exists()"
+          }
+        },
+        "sig": {
+          "$to": {
+            "$from": {
+              ".write": "auth != null && auth.uid == $from && root.child('rooms/' + $sid + '/keys/' + auth.uid).exists()"
+            }
+          }
+        }
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    }
+  }
+}
